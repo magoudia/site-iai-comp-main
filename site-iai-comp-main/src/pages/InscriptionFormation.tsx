@@ -31,6 +31,18 @@ const InscriptionFormation = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await res.text();
+        console.error('Réponse non-JSON:', text);
+        throw new Error('Réponse du serveur invalide');
+      }
+
       const data = await res.json();
 
       if (data.success) {
@@ -41,8 +53,9 @@ const InscriptionFormation = () => {
         alert('Erreur: ' + data.error);
       }
     } catch (err) {
-      console.error(err);
-      alert('Erreur réseau');
+      console.error('Erreur complète:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Erreur inconnue';
+      alert('Erreur lors de l\'envoi: ' + errorMessage);
     } finally {
       setIsSubmitting(false);
     }

@@ -115,6 +115,8 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     console.error('Erreur lors de l\'envoi:', error);
     
+    // S'assurer que la réponse est toujours en JSON
+    res.setHeader('Content-Type', 'application/json');
     return res.status(500).json({ 
       success: false, 
       error: 'Erreur interne du serveur',
