@@ -1,63 +1,70 @@
-import { useState } from 'react';
-import { sendEmail } from '../lib/resend';
+import { Resend } from 'resend';
 
-export default function ContactForm() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  });
-  const [status, setStatus] = useState('');
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setStatus('sending');
+export default async function handler(req, res) {
+  // Headers CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    try {
-      await sendEmail(formData);
-      setStatus('success');
-      setFormData({ name: '', email: '', subject: '', message: '' });
-    } catch (error) {
-      setStatus('error');
-      console.error('Erreur:', error);
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ 
+      success: false,
+      message: 'Méthode non autorisée' 
+    });
+  }
+
+  try {
+    // Vérification des variables d'environnement
+    if (!process.env.RESEND_API_KEY) {
+      console.error('RESEND_API_KEY manquante');
+      return res.status(500).json({
+        success: false,
+        message: 'Configuration serveur incomplète'
+      });
     }
-  };
 
-  return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="text"
-        placeholder="Nom"
-        value={formData.name}
-        onChange={(e) => setFormData({...formData, name: e.target.value})}
-        required
-      />
-      <input
-        type="email"
-        placeholder="Email"
-        value={formData.email}
-        onChange={(e) => setFormData({...formData, email: e.target.value})}
-        required
-      />
-      <input
-        type="text"
-        placeholder="Sujet"
-        value={formData.subject}
-        onChange={(e) => setFormData({...formData, subject: e.target.value})}
-      />
-      <textarea
-        placeholder="Message"
-        value={formData.message}
-        onChange={(e) => setFormData({...formData, message: e.target.value})}
-        required
-      />
-      <button type="submit" disabled={status === 'sending'}>
-        {status === 'sending' ? 'Envoi...' : 'Envoyer'}
-      </button>
-      
-      {status === 'success' && <p>Message envoyé avec succès !</p>}
-      {status === 'error' && <p>Erreur lors de l'envoi.</p>}
-    </form>
-  );
+    const { name, email, subject, message } = req.body;
+
+    // Validation basique
+    if (!name || !email || !message) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Tous les champs sont requis' 
+      });
+    }
+
+    const data = await resend.emails.send({
+      from: process.env.FROM_EMAIL || 'noreply@votredomaine.com',
+      to: [process.env.TO_EMAIL || 'contact@votredomaine.com'],
+      subject: subject || `Nouveau message de ${name}`,
+      html: `
+        <h2>Nouveau message depuis votre site</h2>
+        <p><strong>Nom:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Message:</strong></p>
+        <p>${message.replace(/\n/g, '<br>')}</p>
+      `,
+      replyTo: email,
+    });
+
+    return res.status(200).json({ 
+      success: true,
+      message: 'Email envoyé avec succès',
+      id: data.id 
+    });
+
+  } catch (error) {
+    console.error('Erreur envoi email:', error);
+    return res.status(500).json({ 
+      success: false,
+      message: 'Erreur lors de l\'envoi de l\'email',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
 }

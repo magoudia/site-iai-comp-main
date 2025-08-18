@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import emailjs from 'emailjs-com';
 
 const InscriptionFormation = () => {
   const location = useLocation();
@@ -15,33 +14,37 @@ const InscriptionFormation = () => {
     message: ''
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    emailjs.send(
-      'service_gjy4jmr',
-      'template_95f2z3a',
-      {
-        from_name: formData.name,
-        from_email: formData.email,
-        phone: formData.phone,
-        formation: formData.formation,
-        message: formData.message,
-      },
-      '-59ZpLNiQF9ncW5M8'
-    )
-    .then(() => {
-      setIsSubmitted(true);
-      setTimeout(() => setIsSubmitted(false), 3000);
-      setFormData({ name: '', email: '', phone: '', formation: '', message: '' });
-    })
-    .catch(() => {
-      alert("Erreur lors de l'envoi de l'inscription. Veuillez réessayer.");
-    });
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch('http://localhost:3001/api/send-formation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setIsSubmitted(true);
+        setFormData({ name: '', email: '', phone: '', formation: '', message: '' });
+        setTimeout(() => setIsSubmitted(false), 4000);
+      } else {
+        alert('Erreur: ' + data.error);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Erreur réseau');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -72,7 +75,15 @@ const InscriptionFormation = () => {
               <label className="block text-gray-700 mb-2">Message</label>
               <textarea name="message" value={formData.message} onChange={handleChange} rows={4} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-iai-blue focus:border-transparent transition-all resize-none" />
             </div>
-            <button type="submit" className="w-full bg-gradient-to-r from-iai-blue to-iai-red text-white py-4 rounded-lg font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300">S'inscrire</button>
+            <button 
+              type="submit" 
+              disabled={isSubmitting}
+              className={`w-full bg-gradient-to-r from-iai-blue to-iai-red text-white py-4 rounded-lg font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300 ${
+                isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+              }`}
+            >
+              {isSubmitting ? "Envoi..." : "S'inscrire"}
+            </button>
           </>
         )}
       </form>

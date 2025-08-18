@@ -29,7 +29,7 @@ app.use((req, res, next) => {
 // Route de test
 app.get('/', (req, res) => {
   res.json({ 
-    message: 'Serveur de mail Stop Sida opérationnel',
+    message: 'Serveur de mail IAI Compétences opérationnel',
     timestamp: new Date().toISOString()
   });
 });
@@ -41,6 +41,76 @@ app.get('/health', (req, res) => {
     service: 'Mail Server',
     timestamp: new Date().toISOString()
   });
+});
+
+// Route pour les inscriptions formations
+app.post('/api/send-formation', async (req, res) => {
+  try {
+    const { name, email, phone, formation, message } = req.body;
+
+    // Validation des champs requis
+    if (!name || !email || !formation) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Nom, email et formation sont obligatoires' 
+      });
+    }
+
+    // Validation de l'email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Format d\'email invalide' 
+      });
+    }
+
+    // Envoyer l'email avec Resend
+    const data = await resend.emails.send({
+      from: 'IAI Compétences <onboarding@resend.dev>',
+      to: ['magoudia203@gmail.com'],
+      subject: `[Inscription Formation] ${formation}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px;">
+            Nouvelle inscription à une formation
+          </h2>
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+            <p><strong style="color: #007bff;">Nom:</strong> ${name}</p>
+            <p><strong style="color: #007bff;">Email:</strong> ${email}</p>
+            ${phone ? `<p><strong style="color: #007bff;">Téléphone:</strong> ${phone}</p>` : ''}
+            <p><strong style="color: #007bff;">Formation:</strong> ${formation}</p>
+          </div>
+          ${message ? `
+          <div style="background-color: #fff; padding: 20px; border: 1px solid #dee2e6; border-radius: 5px;">
+            <h3 style="color: #333; margin-top: 0;">Message:</h3>
+            <p style="line-height: 1.6; color: #555;">${message.replace(/\n/g, '<br>')}</p>
+          </div>
+          ` : ''}
+          <div style="margin-top: 20px; padding: 10px; background-color: #e9ecef; border-radius: 5px; font-size: 12px; color: #666;">
+            <p>Cette inscription a été envoyée depuis le site IAI Compétences le ${new Date().toLocaleString('fr-FR')}.</p>
+          </div>
+        </div>
+      `
+    });
+
+    console.log('Inscription formation envoyée avec succès:', data);
+    
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Inscription envoyée avec succès',
+      data: data 
+    });
+
+  } catch (error) {
+    console.error('Erreur lors de l\'envoi de l\'inscription:', error);
+    
+    return res.status(500).json({ 
+      success: false, 
+      error: 'Erreur interne du serveur lors de l\'envoi de l\'inscription',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
 });
 
 // Route principale pour envoyer les emails
@@ -67,7 +137,7 @@ app.post('/api/send-email', async (req, res) => {
 
     // Envoyer l'email avec Resend
     const data = await resend.emails.send({
-      from: 'Stop Sida <onboarding@resend.dev>', // Changez pour votre domaine validé
+      from: 'IAI Compétences <onboarding@resend.dev>',
       to: ['magoudia203@gmail.com'],
       subject: `[Contact Form] ${subject}`,
       html: `
@@ -86,7 +156,7 @@ app.post('/api/send-email', async (req, res) => {
             <p style="line-height: 1.6; color: #555;">${message.replace(/\n/g, '<br>')}</p>
           </div>
           <div style="margin-top: 20px; padding: 10px; background-color: #e9ecef; border-radius: 5px; font-size: 12px; color: #666;">
-            <p>Ce message a été envoyé depuis le formulaire de contact du site Stop Sida le ${new Date().toLocaleString('fr-FR')}.</p>
+            <p>Ce message a été envoyé depuis le formulaire de contact du site IAI Compétences le ${new Date().toLocaleString('fr-FR')}.</p>
           </div>
         </div>
       `
@@ -131,7 +201,7 @@ app.use((err, req, res, next) => {
 // Démarrage du serveur
 app.listen(PORT, () => {
   console.log(`🚀 Serveur démarré sur le port ${PORT}`);
-  console.log(`📧 Service de mail Stop Sida opérationnel`);
+  console.log(`📧 Service de mail IAI Compétences opérationnel`);
   console.log(`🌐 URL: http://localhost:${PORT}`);
   
   // Vérifier que la clé API Resend est présente
