@@ -4,7 +4,7 @@ const API_BASE_URL = import.meta.env.PROD
   : 'http://localhost:3001';
 
 export const API_ENDPOINTS = {
-  SEND_EMAIL: `${API_BASE_URL}/api`,
+  SEND_EMAIL: `${API_BASE_URL}/api/send-email`,
 };
 
 export { API_BASE_URL };

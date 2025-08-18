@@ -1,7 +1,7 @@
-// Vercel Serverless Function pour l'envoi d'emails
+// Fonction Vercel pour l'envoi d'emails
 const { Resend } = require('resend');
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -10,8 +10,7 @@ module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
 
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return res.status(200).end();
   }
 
   if (req.method !== 'POST') {
@@ -28,7 +27,7 @@ module.exports = async function handler(req, res) {
     }
 
     const resend = new Resend(process.env.RESEND_API_KEY);
-    const { name, email, phone, subject, message, formation } = req.body;
+    const { name, email, phone, subject, message, formation } = req.body || {};
 
     // Déterminer le type de formulaire
     const isFormation = formation && !subject;
