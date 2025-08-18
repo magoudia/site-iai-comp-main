@@ -1,12 +1,11 @@
 // Fonction Vercel pour l'envoi d'emails
-const { Resend } = require('resend');
+import { Resend } from 'resend';
 
 export default async function handler(req, res) {
   // CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Content-Type', 'application/json');
 
   if (req.method === 'OPTIONS') {
@@ -18,15 +17,24 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Vérifier la clé API
+    // Vérifier la clé API d'abord
     if (!process.env.RESEND_API_KEY) {
       return res.status(500).json({ 
         success: false, 
-        error: 'Configuration manquante: RESEND_API_KEY' 
+        error: 'RESEND_API_KEY manquante' 
       });
     }
 
     const resend = new Resend(process.env.RESEND_API_KEY);
+    
+    // Vérifier le body
+    if (!req.body) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Données manquantes' 
+      });
+    }
+
     const { name, email, phone, subject, message, formation } = req.body || {};
 
     // Déterminer le type de formulaire
