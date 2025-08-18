@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { API_ENDPOINTS } from '../config/api';
 
 const InscriptionFormation = () => {
   const location = useLocation();
@@ -25,7 +26,7 @@ const InscriptionFormation = () => {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch('http://localhost:3001/api/send-formation', {
+      const res = await fetch(API_ENDPOINTS.SEND_EMAIL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)

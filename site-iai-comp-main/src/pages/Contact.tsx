@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle } from 'lucide-react';
+import { API_ENDPOINTS } from '../config/api';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -45,7 +46,7 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch('http://localhost:3001/api/send-email', {
+      const res = await fetch(API_ENDPOINTS.SEND_EMAIL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
