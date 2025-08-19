@@ -1,6 +1,8 @@
 // Configuration des endpoints API
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://your-vercel-app.vercel.app' 
+const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
+
+const API_BASE_URL = isProduction 
+  ? '' // Utilise l'URL actuelle en production
   : 'http://localhost:3001';
 
 export const API_ENDPOINTS = {
