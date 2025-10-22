@@ -68,7 +68,7 @@ app.post('/api/send-formation', async (req, res) => {
     // Envoyer l'email avec Resend
     const data = await resend.emails.send({
       from: 'IAI Compétences <onboarding@resend.dev>',
-      to: ['magoudia203@gmail.com'],
+      to: ['aadio@iaicompetences.com'],
       subject: `[Inscription Formation] ${formation}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -138,7 +138,7 @@ app.post('/api/send-email', async (req, res) => {
     // Envoyer l'email avec Resend
     const data = await resend.emails.send({
       from: 'IAI Compétences <onboarding@resend.dev>',
-      to: ['magoudia203@gmail.com'],
+      to: ['aadio@iaicompetences.com'],
       subject: `[Formulaire de contact] ${subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

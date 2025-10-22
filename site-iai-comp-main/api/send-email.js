@@ -114,7 +114,7 @@ export default async function handler(req, res) {
     // Envoyer l'email avec Resend
     const data = await resend.emails.send({
       from: 'IAI Compétences <onboarding@resend.dev>',
-      to: ['magoudia203@gmail.com'],
+      to: ['aadio@iaicompetences.com'],
       subject: emailSubject,
       html: emailHtml
     });
