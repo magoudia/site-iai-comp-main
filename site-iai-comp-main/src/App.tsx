@@ -7,7 +7,6 @@ import About from './pages/About';
 import Services from './pages/Services';
 import Training from './pages/Training';
 import Contact from './pages/Contact';
-import News from './pages/News';
 import InscriptionFormation from './pages/InscriptionFormation';
 import FormationDetail from './pages/FormationDetail';
 import ServiceDetail from './pages/ServiceDetail';
@@ -25,7 +24,6 @@ function App() {
             <Route path="/a-propos" element={<About />} />
             <Route path="/services" element={<Services />} />
             <Route path="/formations" element={<Training />} />
-            <Route path="/actualites" element={<News />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/inscription-formation" element={<InscriptionFormation />} />
             <Route path="/formation/:slug" element={<FormationDetail />} />
