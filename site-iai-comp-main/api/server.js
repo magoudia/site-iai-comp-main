@@ -139,7 +139,7 @@ app.post('/api/send-email', async (req, res) => {
     const data = await resend.emails.send({
       from: 'IAI Compétences <onboarding@resend.dev>',
       to: ['magoudia203@gmail.com'],
-      subject: `[Contact Form] ${subject}`,
+      subject: `[Formulaire de contact] ${subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px;">

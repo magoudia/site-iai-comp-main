@@ -68,7 +68,7 @@ export default async function handler(req, res) {
     }
 
     // Préparer le contenu de l'email
-    const emailSubject = isFormation ? `[Inscription Formation] ${formation}` : `[Contact Form] ${subject}`;
+    const emailSubject = isFormation ? `[Inscription Formation] ${formation}` : `[Formulaire de contact] ${subject}`;
     const emailHtml = isFormation ? `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px;">
