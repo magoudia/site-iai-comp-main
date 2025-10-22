@@ -60,11 +60,6 @@ const Footer = () => {
                   Formations
                 </Link>
               </li>
-              <li>
-                <Link to="/equipe" className="text-gray-300 hover:text-white transition-colors">
-                  Notre Équipe
-                </Link>
-              </li>
             </ul>
           </div>
 

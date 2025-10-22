@@ -22,7 +22,6 @@ const Header = () => {
     { name: 'À Propos', href: '/a-propos' },
     { name: 'Services', href: '/services' },
     { name: 'Formations', href: '/formations' },
-    { name: 'Équipe', href: '/equipe' },
     { name: 'Actualités', href: '/actualites' },
     { name: 'Contact', href: '/contact' },
   ];
