@@ -1,0 +1,51 @@
+Options -Indexes -MultiViews
+AddType application/javascript .js
+AddType text/css .css
+
+RewriteEngine On
+RewriteBase /
+
+# Favicon
+RewriteRule ^favicon\.ico$ favicon.png [L]
+
+# Laisser passer les assets et l'API
+RewriteRule ^assets/ - [L]
+RewriteRule ^api/ - [L]
+
+# Si le fichier/dossier existe, ne pas réécrire
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Fallback SPA (React/Vite)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.html [L]
+
+# Caching
+<IfModule mod_expires.c>
+ExpiresActive On
+ExpiresByType text/css "access plus 7 days"
+ExpiresByType application/javascript "access plus 7 days"
+ExpiresByType image/png "access plus 30 days"
+ExpiresByType image/jpeg "access plus 30 days"
+ExpiresByType image/gif "access plus 30 days"
+ExpiresByType image/webp "access plus 30 days"
+ExpiresByType image/svg+xml "access plus 30 days"
+ExpiresByType font/woff2 "access plus 30 days"
+ExpiresDefault "access plus 1 day"
+</IfModule>
+
+# Compression
+<IfModule mod_deflate.c>
+AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript application/javascript application/json application/xml image/svg+xml
+</IfModule>
+
+# Désactiver le cache sur index.html (évite Edge qui garde des anciens hashes)
+<IfModule mod_headers.c>
+  <FilesMatch "^index\.html$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+</IfModule>
