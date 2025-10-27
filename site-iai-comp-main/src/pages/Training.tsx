@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BookOpen, Award, Users, Clock, CheckCircle, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const Training = () => {
+  const [openFaqIndex, setOpenFaqIndex] = useState(null);
+
   const programs = [
     {
       slug: 'developpement-web-full-stack',
@@ -126,7 +128,32 @@ const Training = () => {
     }
   ];
 
+  const faqs = [
+    {
+      question: "Comment s'inscrire à une formation ?",
+      answer: "Cliquez sur le bouton \"S'inscrire\" de la formation souhaitée et remplissez le formulaire dédié. Vous recevrez une confirmation par email."
+    },
+    {
+      question: "Peut-on financer sa formation ?",
+      answer: "Oui, plusieurs solutions de financement sont possibles. Contactez-nous pour étudier votre situation et les options disponibles."
+    },
+    {
+      question: "Les formations sont-elles certifiantes ?",
+      answer: "Toutes nos formations délivrent une attestation ou un certificat reconnu dans le secteur IT."
+    },
+    {
+      question: "Les formations sont-elles accessibles à distance ?",
+      answer: "La plupart de nos programmes sont disponibles en présentiel, à distance ou en format hybride."
+    },
+    {
+      question: "Quels sont les prérequis ?",
+      answer: "Les prérequis varient selon la formation. Consultez la fiche détaillée de chaque programme pour plus d'informations."
+    }
+  ];
 
+  const toggleFaq = (index) => {
+    setOpenFaqIndex(openFaqIndex === index ? null : index);
+  };
 
   return (
     <div className="pt-20">
@@ -273,8 +300,6 @@ const Training = () => {
         </div>
       </section>
 
-
-
       {/* CTA */}
       <section className="py-20 bg-gradient-to-r from-iai-blue to-iai-red">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -302,31 +327,52 @@ const Training = () => {
         </div>
       </section>
 
-      {/* FAQ Section */}
+      {/* FAQ Section avec Accordion */}
       <section className="py-20 bg-white">
-        <div className="max-w-3xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-iai-blue mb-8 text-center">FAQ - Questions fréquentes</h2>
-          <div className="space-y-6">
-            <div>
-              <h3 className="font-semibold text-lg text-iai-blue mb-2">Comment s'inscrire à une formation ?</h3>
-              <p className="text-gray-700">Cliquez sur le bouton "S'inscrire" de la formation souhaitée et remplissez le formulaire dédié. Vous recevrez une confirmation par email.</p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-lg text-iai-blue mb-2">Peut-on financer sa formation ?</h3>
-              <p className="text-gray-700">Oui, plusieurs solutions de financement sont possibles. Contactez-nous pour étudier votre situation et les options disponibles.</p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-lg text-iai-blue mb-2">Les formations sont-elles certifiantes ?</h3>
-              <p className="text-gray-700">Toutes nos formations délivrent une attestation ou un certificat reconnu dans le secteur IT.</p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-lg text-iai-blue mb-2">Les formations sont-elles accessibles à distance ?</h3>
-              <p className="text-gray-700">La plupart de nos programmes sont disponibles en présentiel, à distance ou en format hybride.</p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-lg text-iai-blue mb-2">Quels sont les prérequis ?</h3>
-              <p className="text-gray-700">Les prérequis varient selon la formation. Consultez la fiche détaillée de chaque programme pour plus d'informations.</p>
-            </div>
+        <div className="max-w-7xl mx-auto px-5">
+          <h2 className="text-3xl font-bold text-iai-blue mb-8 text-center">
+            FAQ - Questions fréquentes
+          </h2>
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <div
+                key={index}
+                className="border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-md"
+              >
+                <button
+                  onClick={() => toggleFaq(index)}
+                  className="w-full flex items-center justify-between p-5 text-left bg-white hover:bg-gray-50 transition-colors duration-200"
+                >
+                  <h3 className="font-semibold text-lg text-iai-blue pr-4">
+                    {faq.question}
+                  </h3>
+                  <svg
+                    className={`w-5 h-5 text-iai-blue flex-shrink-0 transition-transform duration-300 ${
+                      openFaqIndex === index ? 'rotate-180' : ''
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+                <div
+                  className={`overflow-hidden transition-all duration-300 ${
+                    openFaqIndex === index ? 'max-h-96' : 'max-h-0'
+                  }`}
+                >
+                  <div className="p-5 pt-0 text-gray-700 bg-gray-50">
+                    {faq.answer}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
