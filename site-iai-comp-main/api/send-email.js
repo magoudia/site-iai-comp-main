@@ -26,6 +26,8 @@ export default async function handler(req, res) {
     }
 
     const resend = new Resend(process.env.RESEND_API_KEY);
+    const TO_EMAIL = process.env.CONTACT_EMAIL || 'aadiao@iaicompetences.com';
+    const FROM_EMAIL = process.env.MAIL_FROM || 'IAI Compétences <onboarding@resend.dev>';
     
     // Vérifier le body
     if (!req.body) {
@@ -113,8 +115,8 @@ export default async function handler(req, res) {
 
     // Envoyer l'email avec Resend
     const data = await resend.emails.send({
-      from: 'IAI Compétences <onboarding@resend.dev>',
-      to: ['aadio@iaicompetences.com'],
+      from: FROM_EMAIL,
+      to: [TO_EMAIL],
       subject: emailSubject,
       html: emailHtml
     });

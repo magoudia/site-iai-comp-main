@@ -6,7 +6,7 @@ const API_BASE_URL = isProduction
   : 'http://localhost:3001';
 
 export const API_ENDPOINTS = {
-  SEND_EMAIL: isProduction ? `/api/send-email.php` : `${API_BASE_URL}/api/send-email`,
+  SEND_EMAIL: isProduction ? `/api/send-email` : `${API_BASE_URL}/api/send-email`,
 };
 
 export { API_BASE_URL };

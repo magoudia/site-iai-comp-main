@@ -12,6 +12,10 @@ const PORT = process.env.PORT || 3000;
 // Initialiser Resend
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Emails configurables via variables d'environnement
+const TO_EMAIL = process.env.CONTACT_EMAIL || 'aadiao@iaicompetences.com';
+const FROM_EMAIL = process.env.MAIL_FROM || 'IAI Compétences <onboarding@resend.dev>';
+
 // Middleware
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
@@ -67,8 +71,8 @@ app.post('/api/send-formation', async (req, res) => {
 
     // Envoyer l'email avec Resend
     const data = await resend.emails.send({
-      from: 'IAI Compétences <onboarding@resend.dev>',
-      to: ['aadio@iaicompetences.com'],
+      from: FROM_EMAIL,
+      to: [TO_EMAIL],
       subject: `[Inscription Formation] ${formation}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -137,8 +141,8 @@ app.post('/api/send-email', async (req, res) => {
 
     // Envoyer l'email avec Resend
     const data = await resend.emails.send({
-      from: 'IAI Compétences <onboarding@resend.dev>',
-      to: ['aadio@iaicompetences.com'],
+      from: FROM_EMAIL,
+      to: [TO_EMAIL],
       subject: `[Formulaire de contact] ${subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
