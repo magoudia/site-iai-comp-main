@@ -14,7 +14,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Emails configurables via variables d'environnement
 const TO_EMAIL = process.env.CONTACT_EMAIL || 'aadiao@iaicompetences.com';
-const FROM_EMAIL = process.env.MAIL_FROM || 'IAI Compétences <onboarding@resend.dev>';
+const FROM_EMAIL = process.env.MAIL_FROM || 'contact@iaicompetences.com';
 
 // Middleware
 app.use(cors({
