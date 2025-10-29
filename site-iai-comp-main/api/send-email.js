@@ -117,6 +117,7 @@ export default async function handler(req, res) {
     const data = await resend.emails.send({
       from: FROM_EMAIL,
       to: [TO_EMAIL],
+      reply_to: email || 'magoudia203@gmail.com',
       subject: emailSubject,
       html: emailHtml
     });
