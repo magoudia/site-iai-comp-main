@@ -1,12 +1,11 @@
 // Vercel Serverless Function pour l'envoi d'emails
-const { Resend } = require('resend');
+const { Resend } = // Email API disabled
 
 module.exports = async function handler(req, res) {
-  // CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Content-Type', 'application/json');
 
   if (req.method === 'OPTIONS') {
@@ -14,15 +13,7 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ success: false, error: 'Method not allowed' });
-  }
-
-  try {
-    // Vérifier la clé API
-    if (!process.env.RESEND_API_KEY) {
-      return res.status(500).json({ 
-        success: false, 
+  return res.status(410).json({ success: false, error: 'Email feature disabled' });
         error: 'Configuration manquante: RESEND_API_KEY' 
       });
     }

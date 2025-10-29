@@ -17,6 +17,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    return res.status(410).json({ success: false, error: 'Email feature disabled' });
     // Vérifier la clé API
     if (!process.env.RESEND_API_KEY) {
       return res.status(500).json({ 
