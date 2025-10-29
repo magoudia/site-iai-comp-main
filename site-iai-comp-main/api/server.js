@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Emails configurables via variables d'environnement
-const TO_EMAIL = process.env.CONTACT_EMAIL || 'aadiao@iaicompetences.com';
+const TO_EMAIL = process.env.CONTACT_EMAIL || 'magoudia203@gmail.com';
 const FROM_EMAIL = process.env.MAIL_FROM || 'contact@iaicompetences.com';
 
 // Middleware
