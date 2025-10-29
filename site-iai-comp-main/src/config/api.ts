@@ -1,12 +1,9 @@
 // Configuration des endpoints API
-const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
-
-const API_BASE_URL = isProduction 
-  ? '' // Utilise l'URL actuelle en production
-  : 'http://localhost:3001';
+const VERCEL_API_BASE = (import.meta as any).env?.VITE_API_BASE_URL as string | undefined;
+// Option A: si VITE_API_BASE_URL est défini (ex: https://votre-projet.vercel.app), on l'utilise.
+// Sinon, fallback sur la même origine ('') pour un front déployé sur Vercel avec API sur le même domaine.
+export const API_BASE_URL = VERCEL_API_BASE || '';
 
 export const API_ENDPOINTS = {
-  SEND_EMAIL: isProduction ? `/api/send-email` : `${API_BASE_URL}/api/send-email`,
+  SEND_EMAIL: `${API_BASE_URL}/api/send-email`,
 };
-
-export { API_BASE_URL };
