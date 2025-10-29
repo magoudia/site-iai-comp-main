@@ -1,7 +1,7 @@
 {
     "name": "stop-sida-mail-server",
     "version": "1.0.0",
-    "description": "Serveur Express pour le service de mail Stop Sida avec Resend",
+    "description": "Serveur Express pour le service de mail Stop Sida",
     "main": "server.js",
     "type": "module",
     "scripts": {
@@ -11,7 +11,6 @@
     },
     "keywords": [
       "express",
-      "resend",
       "mail",
       "nodejs",
       "stop-sida"
@@ -21,7 +20,6 @@
     "dependencies": {
       "express": "^4.18.2",
       "cors": "^2.8.5",
-      "resend": "^3.2.0",
       "dotenv": "^16.4.5"
     },
     "devDependencies": {
