@@ -42,8 +42,8 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
   exit;
 }
 
-$to = 'aadio@iaicompetences.com';
-$from = 'no-reply@iaicompetences.com';
+$to = 'magoudia203@gmail.com';
+$from = 'onboarding@resend.dev';
 $subjectLine = '[Formulaire de contact] ' . $subject;
 
 $html = '<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">'
@@ -59,7 +59,7 @@ $html = '<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0
   .'<p style="line-height: 1.6; color: #555;">'.nl2br(htmlspecialchars($message)).'</p>'
   .'</div>'
   .'<div style="margin-top: 20px; padding: 10px; background-color: #e9ecef; border-radius: 5px; font-size: 12px; color: #666;">'
-  .'<p>Envoyé depuis iaicompetences.com le '.date('d/m/Y H:i:s').'.</p>'
+  .'<p>Envoyé depuis le site web le '.date('d/m/Y H:i:s').'.</p>'
   .'</div>'
   .'</div>';
 
