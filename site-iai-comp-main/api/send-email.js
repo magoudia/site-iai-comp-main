@@ -48,7 +48,15 @@ export default async function handler(req, res) {
     }
 
     const TO_EMAIL = process.env.CONTACT_EMAIL;
-    const FROM_EMAIL = process.env.MAIL_FROM || 'Website <onboarding@resend.dev>';
+    const RAW_FROM = process.env.MAIL_FROM || 'Website <onboarding@resend.dev>';
+    // Remove accidental wrapping quotes from env values like "Website <...>"
+    const FROM_EMAIL = RAW_FROM.replace(/^["']|["']$/g, '');
+
+    // Basic validation for `from` to avoid 422 from Resend
+    const fromValid = /.+<[^<>\s@]+@[^<>\s@]+\.[^<>\s@]+>$/i.test(FROM_EMAIL) || /^[^<>\s@]+@[^<>\s@]+\.[^<>\s@]+$/i.test(FROM_EMAIL);
+    if (!fromValid) {
+      return res.status(500).json({ success: false, error: 'Invalid MAIL_FROM format. Use email@example.com or Name <email@example.com>' });
+    }
 
     if (!TO_EMAIL) {
       return res.status(500).json({ success: false, error: 'Missing CONTACT_EMAIL' });
