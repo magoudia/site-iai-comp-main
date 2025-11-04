@@ -47,7 +47,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: 'Invalid email format' });
     }
 
-    const TO_EMAIL = process.env.CONTACT_EMAIL || 'aadia@iaicompetences.com';
+    const TO_EMAIL = 'aadia@iaicompetences.com';
     const RAW_FROM = process.env.MAIL_FROM || 'Website <onboarding@resend.dev>';
     // Remove accidental wrapping quotes from env values like "Website <...>"
     const FROM_EMAIL = RAW_FROM.replace(/^["']|["']$/g, '');
@@ -58,9 +58,6 @@ export default async function handler(req, res) {
       return res.status(500).json({ success: false, error: 'Invalid MAIL_FROM format. Use email@example.com or Name <email@example.com>' });
     }
 
-    if (!TO_EMAIL) {
-      return res.status(500).json({ success: false, error: 'Missing CONTACT_EMAIL' });
-    }
 
     const emailSubject = isFormation ? `[Inscription Formation] ${formation}` : `[Formulaire de contact] ${subject}`;
     const bodyHtml = isFormation ? `
