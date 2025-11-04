@@ -47,7 +47,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: 'Invalid email format' });
     }
 
-    const TO_EMAIL = process.env.CONTACT_EMAIL;
+    const TO_EMAIL = process.env.CONTACT_EMAIL || 'aadia@iaicompetences.com';
     const RAW_FROM = process.env.MAIL_FROM || 'Website <onboarding@resend.dev>';
     // Remove accidental wrapping quotes from env values like "Website <...>"
     const FROM_EMAIL = RAW_FROM.replace(/^["']|["']$/g, '');
