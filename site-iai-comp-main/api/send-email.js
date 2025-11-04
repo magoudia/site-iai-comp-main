@@ -128,6 +128,7 @@ export default async function handler(req, res) {
     console.log('Réponse Resend:', data);
 
     // Vérifier si Resend a retourné une erreur
+    // La réponse de Resend a la structure: {data: {...}, error: ...}
     if (data.error) {
       console.error('Erreur Resend:', data.error);
       
@@ -150,7 +151,10 @@ export default async function handler(req, res) {
       });
     }
 
-    if (!data.id) {
+    // La réponse de Resend a la structure: {data: {id: "...", ...}, error: null}
+    // Donc l'ID est dans data.data.id, pas data.id
+    const emailId = data.data?.id;
+    if (!emailId) {
       console.error('Pas d\'ID retourné par Resend:', data);
       return res.status(500).json({ 
         success: false, 
@@ -159,8 +163,8 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log('Email envoyé avec succès, ID:', data.id);
-    return res.status(200).json({ success: true, message: 'Email envoyé', data });
+    console.log('Email envoyé avec succès, ID:', emailId);
+    return res.status(200).json({ success: true, message: 'Email envoyé', data: { id: emailId } });
   } catch (error) {
     console.error('Erreur envoi email:', {
       message: error?.message,
