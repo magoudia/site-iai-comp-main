@@ -17,6 +17,15 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Log initial pour déboguer
+    console.log('API send-email appelée:', {
+      method: req.method,
+      hasBody: !!req.body,
+      env: {
+        hasResendKey: !!process.env.RESEND_API_KEY,
+        nodeEnv: process.env.NODE_ENV
+      }
+    });
     if (!process.env.RESEND_API_KEY) {
       return res.status(500).json({ success: false, error: 'Missing RESEND_API_KEY' });
     }
@@ -153,7 +162,26 @@ export default async function handler(req, res) {
     console.log('Email envoyé avec succès, ID:', data.id);
     return res.status(200).json({ success: true, message: 'Email envoyé', data });
   } catch (error) {
-    console.error('Erreur envoi email:', error);
-    return res.status(500).json({ success: false, error: 'Erreur interne', details: error?.message || 'Unknown error' });
+    console.error('Erreur envoi email:', {
+      message: error?.message,
+      stack: error?.stack,
+      name: error?.name,
+      error: error
+    });
+    
+    // Retourner plus de détails en développement
+    const errorDetails = process.env.NODE_ENV === 'development' 
+      ? {
+          message: error?.message,
+          stack: error?.stack,
+          name: error?.name
+        }
+      : { message: error?.message || 'Unknown error' };
+    
+    return res.status(500).json({ 
+      success: false, 
+      error: 'Erreur interne', 
+      details: errorDetails
+    });
   }
 }
