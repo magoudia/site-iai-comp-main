@@ -47,7 +47,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: 'Invalid email format' });
     }
 
-    const TO_EMAIL = 'aadia@iaicompetences.com';
+    const TO_EMAIL = 'magoudia203@gmail.com';
+    // IMPORTANT: Pour envoyer à d'autres adresses que votre email de compte Resend,
+    // vous devez vérifier le domaine 'iaicompetences.com' dans Resend.
+    // Une fois le domaine vérifié, changez MAIL_FROM dans .env ou utilisez:
+    // MAIL_FROM='IAI-Compétences <noreply@iaicompetences.com>'
     const RAW_FROM = process.env.MAIL_FROM || 'Website <onboarding@resend.dev>';
     // Remove accidental wrapping quotes from env values like "Website <...>"
     const FROM_EMAIL = RAW_FROM.replace(/^["']|["']$/g, '');
@@ -97,6 +101,13 @@ export default async function handler(req, res) {
       </div>
     `;
 
+    console.log('Tentative d\'envoi email:', {
+      from: FROM_EMAIL,
+      to: TO_EMAIL,
+      subject: emailSubject,
+      hasApiKey: !!process.env.RESEND_API_KEY
+    });
+
     const data = await resend.emails.send({
       from: FROM_EMAIL,
       to: [TO_EMAIL],
@@ -105,6 +116,41 @@ export default async function handler(req, res) {
       html: bodyHtml
     });
 
+    console.log('Réponse Resend:', data);
+
+    // Vérifier si Resend a retourné une erreur
+    if (data.error) {
+      console.error('Erreur Resend:', data.error);
+      
+      // Détecter l'erreur de domaine non vérifié
+      const errorMessage = data.error.message || '';
+      if (errorMessage.includes('You can only send testing emails to your own email address') || 
+          errorMessage.includes('verify a domain')) {
+        return res.status(500).json({ 
+          success: false, 
+          error: 'Configuration Resend requise', 
+          details: 'Vous devez vérifier un domaine dans Resend pour envoyer des emails à d\'autres adresses. Allez sur resend.com/domains pour vérifier votre domaine.',
+          resendError: errorMessage
+        });
+      }
+      
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Erreur lors de l\'envoi de l\'email', 
+        details: errorMessage || JSON.stringify(data.error)
+      });
+    }
+
+    if (!data.id) {
+      console.error('Pas d\'ID retourné par Resend:', data);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Erreur: aucun ID retourné par Resend', 
+        details: JSON.stringify(data)
+      });
+    }
+
+    console.log('Email envoyé avec succès, ID:', data.id);
     return res.status(200).json({ success: true, message: 'Email envoyé', data });
   } catch (error) {
     console.error('Erreur envoi email:', error);
