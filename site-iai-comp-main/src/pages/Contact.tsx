@@ -84,7 +84,7 @@ const Contact = () => {
   const contactInfo = [
     { icon: MapPin, title: "Adresse", details: ["Liberté 6 extension", "Lot No16, Dakar", "Sénégal"] },
     { icon: Phone, title: "Téléphone", details: ["+221 77 639 58 10"] },
-    { icon: Mail, title: "Email", details: ["iai-competences@gmail.com"] },
+    { icon: Mail, title: "Email", details: ["aadio@iaicompetences.com"] },
     { icon: Clock, title: "Horaires", details: ["Lun - Ven: 8h00 - 18h00", "Sam: 9h00 - 13h00"] }
   ];
 
