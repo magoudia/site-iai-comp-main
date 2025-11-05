@@ -29,7 +29,6 @@ export default async function handler(req, res) {
     if (!process.env.RESEND_API_KEY) {
       return res.status(500).json({ success: false, error: 'Missing RESEND_API_KEY' });
     }
-
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     if (!req.body) {
@@ -65,7 +64,7 @@ export default async function handler(req, res) {
     // Remove accidental wrapping quotes from env values like "Website <...>"
     const FROM_EMAIL = RAW_FROM.replace(/^["']|["']$/g, '');
 
-    // Basic validation for `from` to avoid 422 from Resend
+    // Basic validation for `from` to avoid provider errors
     const fromValid = /.+<[^<>\s@]+@[^<>\s@]+\.[^<>\s@]+>$/i.test(FROM_EMAIL) || /^[^<>\s@]+@[^<>\s@]+\.[^<>\s@]+$/i.test(FROM_EMAIL);
     if (!fromValid) {
       return res.status(500).json({ success: false, error: 'Invalid MAIL_FROM format. Use email@example.com or Name <email@example.com>' });
@@ -116,7 +115,6 @@ export default async function handler(req, res) {
       subject: emailSubject,
       hasApiKey: !!process.env.RESEND_API_KEY
     });
-
     const data = await resend.emails.send({
       from: FROM_EMAIL,
       to: [TO_EMAIL],
