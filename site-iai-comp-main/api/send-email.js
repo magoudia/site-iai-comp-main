@@ -1,5 +1,7 @@
 // Serverless function for sending emails via Resend
 import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
+import { ConfidentialClientApplication } from '@azure/msal-node';
 
 export default async function handler(req, res) {
   // CORS headers
@@ -23,13 +25,20 @@ export default async function handler(req, res) {
       hasBody: !!req.body,
       env: {
         hasResendKey: !!process.env.RESEND_API_KEY,
+        mailProvider: process.env.MAIL_PROVIDER || 'resend',
         nodeEnv: process.env.NODE_ENV
       }
     });
-    if (!process.env.RESEND_API_KEY) {
-      return res.status(500).json({ success: false, error: 'Missing RESEND_API_KEY' });
+    const provider = (process.env.MAIL_PROVIDER || 'resend').toLowerCase();
+    const useResend = provider === 'resend';
+    const useGraph = provider === 'graph';
+    let resend;
+    if (useResend) {
+      if (!process.env.RESEND_API_KEY) {
+        return res.status(500).json({ success: false, error: 'Missing RESEND_API_KEY' });
+      }
+      resend = new Resend(process.env.RESEND_API_KEY);
     }
-    const resend = new Resend(process.env.RESEND_API_KEY);
 
     if (!req.body) {
       return res.status(400).json({ success: false, error: 'Missing body' });
@@ -55,7 +64,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: 'Invalid email format' });
     }
 
-    const TO_EMAIL = 'magoudia203@gmail.com';
+    const toFromEnv = (process.env.TO_EMAIL || 'magoudia203@gmail.com')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const TO_EMAIL = toFromEnv.length === 1 ? toFromEnv[0] : toFromEnv;
     // IMPORTANT: Pour envoyer à d'autres adresses que votre email de compte Resend,
     // vous devez vérifier le domaine 'iaicompetences.com' dans Resend.
     // Une fois le domaine vérifié, changez MAIL_FROM dans .env ou utilisez:
@@ -113,56 +126,114 @@ export default async function handler(req, res) {
       from: FROM_EMAIL,
       to: TO_EMAIL,
       subject: emailSubject,
-      hasApiKey: !!process.env.RESEND_API_KEY
+      provider,
+      hasApiKey: useResend ? !!process.env.RESEND_API_KEY : 'SMTP'
     });
-    const data = await resend.emails.send({
-      from: FROM_EMAIL,
-      to: [TO_EMAIL],
-      reply_to: email,
-      subject: emailSubject,
-      html: bodyHtml
-    });
+    if (useResend) {
+      const data = await resend.emails.send({
+        from: FROM_EMAIL,
+        to: Array.isArray(TO_EMAIL) ? TO_EMAIL : [TO_EMAIL],
+        reply_to: email,
+        subject: emailSubject,
+        html: bodyHtml
+      });
 
-    console.log('Réponse Resend:', data);
+      console.log('Réponse Resend:', data);
 
-    // Vérifier si Resend a retourné une erreur
-    // La réponse de Resend a la structure: {data: {...}, error: ...}
-    if (data.error) {
-      console.error('Erreur Resend:', data.error);
-      
-      // Détecter l'erreur de domaine non vérifié
-      const errorMessage = data.error.message || '';
-      if (errorMessage.includes('You can only send testing emails to your own email address') || 
-          errorMessage.includes('verify a domain')) {
-        return res.status(500).json({ 
-          success: false, 
-          error: 'Configuration Resend requise', 
-          details: 'Vous devez vérifier un domaine dans Resend pour envoyer des emails à d\'autres adresses. Allez sur resend.com/domains pour vérifier votre domaine.',
-          resendError: errorMessage
-        });
+      if (data.error) {
+        console.error('Erreur Resend:', data.error);
+        const errorMessage = data.error.message || '';
+        if (errorMessage.includes('You can only send testing emails to your own email address') || errorMessage.includes('verify a domain')) {
+          return res.status(500).json({
+            success: false,
+            error: 'Configuration Resend requise',
+            details: 'Vous devez vérifier un domaine dans Resend pour envoyer des emails à d\'autres adresses. Allez sur resend.com/domains pour vérifier votre domaine.',
+            resendError: errorMessage
+          });
+        }
+        return res.status(500).json({ success: false, error: 'Erreur lors de l\'envoi de l\'email', details: errorMessage || JSON.stringify(data.error) });
       }
-      
-      return res.status(500).json({ 
-        success: false, 
-        error: 'Erreur lors de l\'envoi de l\'email', 
-        details: errorMessage || JSON.stringify(data.error)
-      });
-    }
 
-    // La réponse de Resend a la structure: {data: {id: "...", ...}, error: null}
-    // Donc l'ID est dans data.data.id, pas data.id
-    const emailId = data.data?.id;
-    if (!emailId) {
-      console.error('Pas d\'ID retourné par Resend:', data);
-      return res.status(500).json({ 
-        success: false, 
-        error: 'Erreur: aucun ID retourné par Resend', 
-        details: JSON.stringify(data)
-      });
-    }
+      const emailId = data.data?.id;
+      if (!emailId) {
+        console.error('Pas d\'ID retourné par Resend:', data);
+        return res.status(500).json({ success: false, error: 'Erreur: aucun ID retourné par Resend', details: JSON.stringify(data) });
+      }
 
-    console.log('Email envoyé avec succès, ID:', emailId);
-    return res.status(200).json({ success: true, message: 'Email envoyé', data: { id: emailId } });
+      console.log('Email envoyé avec succès, ID:', emailId);
+      return res.status(200).json({ success: true, message: 'Email envoyé', data: { id: emailId } });
+    } else if (useGraph) {
+      // Microsoft Graph sendMail via client credentials
+      const tenantId = process.env.GRAPH_TENANT_ID;
+      const clientId = process.env.GRAPH_CLIENT_ID;
+      const clientSecret = process.env.GRAPH_CLIENT_SECRET;
+      const graphSender = process.env.GRAPH_SENDER || process.env.SMTP_USER; // UPN/email
+
+      if (!tenantId || !clientId || !clientSecret || !graphSender) {
+        return res.status(500).json({ success: false, error: 'Missing GRAPH_TENANT_ID/GRAPH_CLIENT_ID/GRAPH_CLIENT_SECRET/GRAPH_SENDER' });
+      }
+
+      const cca = new ConfidentialClientApplication({
+        auth: { clientId, authority: `https://login.microsoftonline.com/${tenantId}`, clientSecret }
+      });
+      const tokenResponse = await cca.acquireTokenByClientCredential({ scopes: ['https://graph.microsoft.com/.default'] });
+      const accessToken = tokenResponse?.accessToken;
+      if (!accessToken) {
+        return res.status(500).json({ success: false, error: 'Failed to acquire Graph access token' });
+      }
+
+      const payload = {
+        message: {
+          subject: emailSubject,
+          body: { contentType: 'HTML', content: bodyHtml },
+          toRecipients: (Array.isArray(TO_EMAIL) ? TO_EMAIL : [TO_EMAIL]).map(e => ({ emailAddress: { address: e } })),
+          replyTo: email ? [{ emailAddress: { address: email } }] : []
+        },
+        saveToSentItems: false
+      };
+
+      const resp = await fetch(`https://graph.microsoft.com/v1.0/users/${encodeURIComponent(graphSender)}/sendMail`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!resp.ok) {
+        const errText = await resp.text();
+        return res.status(500).json({ success: false, error: 'Graph sendMail failed', details: errText });
+      }
+
+      console.log('Email envoyé via Microsoft Graph');
+      return res.status(200).json({ success: true, message: 'Email envoyé', data: { id: null } });
+    } else {
+      // SMTP Office 365
+      const smtpHost = process.env.SMTP_HOST || 'smtp.office365.com';
+      const smtpPort = Number(process.env.SMTP_PORT || 587);
+      const smtpUser = process.env.SMTP_USER; // ex: contact@iaicompetences.com
+      const smtpPass = process.env.SMTP_PASS; // mot de passe ou app password
+
+      if (!smtpUser || !smtpPass) {
+        return res.status(500).json({ success: false, error: 'Missing SMTP_USER/SMTP_PASS' });
+      }
+
+      const transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpPort === 465,
+        auth: { user: smtpUser, pass: smtpPass }
+      });
+
+      const info = await transporter.sendMail({
+        from: FROM_EMAIL,
+        to: Array.isArray(TO_EMAIL) ? TO_EMAIL.join(',') : TO_EMAIL,
+        replyTo: email,
+        subject: emailSubject,
+        html: bodyHtml
+      });
+
+      console.log('Email envoyé via SMTP:', info?.messageId || info);
+      return res.status(200).json({ success: true, message: 'Email envoyé', data: { id: info?.messageId || null } });
+    }
   } catch (error) {
     console.error('Erreur envoi email:', {
       message: error?.message,
