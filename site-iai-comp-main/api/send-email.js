@@ -18,14 +18,27 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Vérifier que les dépendances sont disponibles
+    if (!Resend) {
+      console.error('Resend n\'est pas disponible');
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Erreur de configuration: Resend non disponible',
+        details: 'Vérifiez que les dépendances sont installées'
+      });
+    }
+    
     // Log initial pour déboguer
     console.log('API send-email appelée:', {
       method: req.method,
       hasBody: !!req.body,
+      bodyKeys: req.body ? Object.keys(req.body) : [],
       env: {
         hasResendKey: !!process.env.RESEND_API_KEY,
         mailProvider: process.env.MAIL_PROVIDER || 'resend',
-        nodeEnv: process.env.NODE_ENV
+        nodeEnv: process.env.NODE_ENV,
+        hasResend: !!Resend,
+        hasNodemailer: !!nodemailer
       }
     });
     const provider = (process.env.MAIL_PROVIDER || 'resend').toLowerCase();
@@ -254,6 +267,8 @@ export default async function handler(req, res) {
       userFriendlyError = 'Erreur de connexion. Veuillez réessayer plus tard.';
     }
     
+    // Toujours retourner le message d'erreur pour aider au débogage
+    // Masquer seulement la stack trace en production
     const errorDetails = isDevelopment 
       ? {
           message: errorMessage,
@@ -261,7 +276,15 @@ export default async function handler(req, res) {
           name: error?.name,
           provider: process.env.MAIL_PROVIDER || 'resend'
         }
-      : { message: errorMessage };
+      : { 
+          message: errorMessage,
+          // Retourner aussi le provider pour aider au débogage
+          provider: process.env.MAIL_PROVIDER || 'resend',
+          // Si c'est une erreur de configuration, donner plus de détails
+          ...(errorMessage.includes('RESEND_API_KEY') || errorMessage.includes('Missing') 
+            ? { hint: 'Vérifiez les variables d\'environnement sur Vercel' }
+            : {})
+        };
     
     return res.status(500).json({ 
       success: false, 
