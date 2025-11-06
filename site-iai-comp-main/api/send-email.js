@@ -143,9 +143,9 @@ export default async function handler(req, res) {
         console.error('Erreur Resend:', data.error);
         const errorMessage = data.error.message || '';
         if (errorMessage.includes('You can only send testing emails to your own email address') || errorMessage.includes('verify a domain')) {
-          return res.status(500).json({
-            success: false,
-            error: 'Configuration Resend requise',
+          return res.status(500).json({ 
+            success: false, 
+            error: 'Configuration Resend requise', 
             details: 'Vous devez vérifier un domaine dans Resend pour envoyer des emails à d\'autres adresses. Allez sur resend.com/domains pour vérifier votre domaine.',
             resendError: errorMessage
           });
@@ -242,18 +242,30 @@ export default async function handler(req, res) {
       error: error
     });
     
-    // Retourner plus de détails en développement
-    const errorDetails = process.env.NODE_ENV === 'development' 
+    // Retourner plus de détails pour aider au débogage
+    const errorMessage = error?.message || 'Unknown error';
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
+    // Messages d'erreur plus explicites
+    let userFriendlyError = 'Erreur lors de l\'envoi de l\'email';
+    if (errorMessage.includes('RESEND_API_KEY') || errorMessage.includes('Missing')) {
+      userFriendlyError = 'Configuration email manquante. Veuillez contacter l\'administrateur.';
+    } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+      userFriendlyError = 'Erreur de connexion. Veuillez réessayer plus tard.';
+    }
+    
+    const errorDetails = isDevelopment 
       ? {
-          message: error?.message,
+          message: errorMessage,
           stack: error?.stack,
-          name: error?.name
+          name: error?.name,
+          provider: process.env.MAIL_PROVIDER || 'resend'
         }
-      : { message: error?.message || 'Unknown error' };
+      : { message: errorMessage };
     
     return res.status(500).json({ 
       success: false, 
-      error: 'Erreur interne', 
+      error: userFriendlyError, 
       details: errorDetails
     });
   }
