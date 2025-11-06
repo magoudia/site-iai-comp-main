@@ -1,7 +1,6 @@
 // Serverless function for sending emails via Resend
 import { Resend } from 'resend';
 import nodemailer from 'nodemailer';
-import { ConfidentialClientApplication } from '@azure/msal-node';
 
 export default async function handler(req, res) {
   // CORS headers
@@ -173,6 +172,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ success: false, error: 'Missing GRAPH_TENANT_ID/GRAPH_CLIENT_ID/GRAPH_CLIENT_SECRET/GRAPH_SENDER' });
       }
 
+      const { ConfidentialClientApplication } = await import('@azure/msal-node');
       const cca = new ConfidentialClientApplication({
         auth: { clientId, authority: `https://login.microsoftonline.com/${tenantId}`, clientSecret }
       });
