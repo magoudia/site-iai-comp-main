@@ -150,7 +150,7 @@ export default async function handler(req, res) {
         html: bodyHtml
       });
 
-      console.log('Réponse Resend:', data);
+      console.log('Réponse Resend complète:', JSON.stringify(data, null, 2));
 
       if (data.error) {
         console.error('Erreur Resend:', data.error);
@@ -166,14 +166,24 @@ export default async function handler(req, res) {
         return res.status(500).json({ success: false, error: 'Erreur lors de l\'envoi de l\'email', details: errorMessage || JSON.stringify(data.error) });
       }
 
-      const emailId = data.data?.id;
-      if (!emailId) {
-        console.error('Pas d\'ID retourné par Resend:', data);
-        return res.status(500).json({ success: false, error: 'Erreur: aucun ID retourné par Resend', details: JSON.stringify(data) });
+      // Resend peut retourner l'ID directement dans data.id ou dans data.data.id
+      const emailId = data.id || data.data?.id;
+      
+      // Valider que l'ID est un UUID valide si présent
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (emailId && !uuidRegex.test(emailId)) {
+        console.warn('ID Resend invalide (pas un UUID):', emailId);
+        // On continue quand même car l'email a probablement été envoyé
       }
 
-      console.log('Email envoyé avec succès, ID:', emailId);
-      return res.status(200).json({ success: true, message: 'Email envoyé', data: { id: emailId } });
+      console.log('Email envoyé avec succès, ID:', emailId || 'non disponible');
+      
+      // Retourner le succès même si l'ID n'est pas disponible
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Email envoyé', 
+        data: { id: emailId || null } 
+      });
     } else if (useGraph) {
       // Microsoft Graph sendMail via client credentials
       const tenantId = process.env.GRAPH_TENANT_ID;
