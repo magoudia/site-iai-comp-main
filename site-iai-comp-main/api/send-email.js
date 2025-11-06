@@ -64,7 +64,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: 'Invalid email format' });
     }
 
-    const toFromEnv = (process.env.TO_EMAIL || 'magoudia203@gmail.com')
+    const toFromEnv = (process.env.TO_EMAIL || 'iaicompetences@outlook.fr')
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean);
